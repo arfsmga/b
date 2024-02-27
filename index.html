@@ -1,11 +1,78 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width">
-    <title>テストページ</title>
-  </head>
-  <body>
-    Visual Studio Codeのテストをしています。
-  </body>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JINS MEME & Philips Hue App</title>
+<style>
+    /* CSS スタイルはここに記述 */
+</style>
+</head>
+<body>
+    <h1>JINS MEME & Philips Hue App</h1>
+    
+    <div id="concentration-value">Concentration: <span id="concentration">0</span></div>
+    
+    <button id="connect-meme-btn">Connect to JINS MEME</button>
+    <button id="start-measuring-btn">Start Measuring</button>
+    <button id="stop-measuring-btn">Stop Measuring</button>
+    
+    <script src="https://unpkg.com/jins-meme-sdk"></script>
+    <script src="https://unpkg.com/phue"></script>
+    <script>
+        // JINS MEME オブジェクトの初期化
+        const meme = new JinsMeme();
+        
+        // Philips Hue オブジェクトの初期化
+        const hue = new Hue();
+        
+        // Philips Hue ブリッジの IP アドレス
+        const bridgeIp = 'YOUR_BRIDGE_IP_ADDRESS';
+        
+        // Philips Hue ブリッジのユーザー名
+        const username = 'YOUR_HUE_USERNAME';
+        
+        // JINS MEME と接続する関数
+        function connectToMeme() {
+            meme.addEventListener('connecting', () => {
+                console.log('Connecting to JINS MEME...');
+            });
+            
+            meme.addEventListener('connected', () => {
+                console.log('Connected to JINS MEME');
+            });
+            
+            meme.addEventListener('disconnected', () => {
+                console.log('Disconnected from JINS MEME');
+            });
+            
+            meme.connect();
+        }
+        
+        // JINS MEME から集中度を取得し、Philips Hue を制御する関数
+        function startMeasuring() {
+            meme.addEventListener('eeg', (e) => {
+                const concentrationValue = e.detail.eeg.alpha; // 仮の集中度の取得方法です
+                
+                // 集中度に基づいて Hue ライトの色を変更する処理を記述
+                // ここでは仮のコードです
+                const hueValue = Math.round((concentrationValue / 100) * 65535);
+                hue.setLightState(bridgeIp, username, 1, {hue: hueValue});
+                
+                document.getElementById('concentration').textContent = concentrationValue;
+            });
+        }
+        
+        // JINS MEME の計測を停止する関数
+        function stopMeasuring() {
+            meme.removeAllEventListeners();
+            meme.disconnect();
+        }
+        
+        // ボタンにイベントリスナーを追加
+        document.getElementById('connect-meme-btn').addEventListener('click', connectToMeme);
+        document.getElementById('start-measuring-btn').addEventListener('click', startMeasuring);
+        document.getElementById('stop-measuring-btn').addEventListener('click', stopMeasuring);
+    </script>
+</body>
 </html>
